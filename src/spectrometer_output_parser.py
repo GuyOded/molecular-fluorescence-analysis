@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 
-@dataclass
+@dataclass(frozen=True)
 class SpectrometerOutput:
     wavelength_to_intensity_mapping: pd.DataFrame
     sample_time: float
