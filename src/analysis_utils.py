@@ -17,8 +17,8 @@ class SpectrometerDataSet:
 
 
 def generate_spectrometer_data_set(output: SpectrometerOutput, normalize_time=True) -> SpectrometerDataSet:
-    wavelength = np.array(output.wavelength_to_intensity_mapping[:, 0], dtype=np.float64)
-    intensity = np.array(output.wavelength_to_intensity_mapping[:, 1], dtype=np.float64)
+    wavelength = np.array(output.wavelength_to_intensity_mapping.iloc[:, 0], dtype=np.float64)
+    intensity = np.copy(np.array(output.wavelength_to_intensity_mapping.iloc[:, 1], dtype=np.float64))
 
     if normalize_time:
         intensity /= output.sample_time
@@ -26,7 +26,7 @@ def generate_spectrometer_data_set(output: SpectrometerOutput, normalize_time=Tr
     wavelength_uncertainty = WAVELENGTH_UNCERTAINTY
 
     intensity_resolution_error = np.full(len(wavelength), 10**-5 / np.sqrt(3), dtype=np.float64)
-    intensity_poisson_error = np.sqrt(intensity)
+    intensity_poisson_error = np.sqrt(np.abs(intensity))
 
     intensity_uncertainty = np.sqrt(intensity_resolution_error**2 + intensity_poisson_error**2)
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 import pandas as pd
-import os
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -14,10 +14,11 @@ class SpectrometerOutput:
 def parse_excel_output(output_path: Path, default_sample_time=None) -> SpectrometerOutput:
     dataframe = pd.read_excel(output_path)
 
+    # print(output_path.stem)
     # Remove empty columns
     dataframe = dataframe.loc[:, ~dataframe.columns.str.contains("^Unnamed")]
     try:
-        sample_time = dataframe.iloc[0, 2]
+        sample_time = np.float64(dataframe.iloc[0, 2])
     except IndexError as e:
         if default_sample_time == None:
             print("Cannot find parse sample time, please provide a default or fix data")
@@ -27,7 +28,8 @@ def parse_excel_output(output_path: Path, default_sample_time=None) -> Spectrome
         sample_time = default_sample_time
 
     # The code assumes the wavelength data is in the
-    wavelength_to_intensity_dataframe = pd.DataFrame({"wavelength": dataframe.iloc[:, 0], "intensity": dataframe.iloc[:, 1]})
+    wavelength_to_intensity_dataframe = pd.DataFrame(
+        {"wavelength": dataframe.iloc[:, 0], "intensity": dataframe.iloc[:, 1]})
 
     return SpectrometerOutput(wavelength_to_intensity_dataframe, sample_time, output_path)
 
