@@ -6,6 +6,7 @@ Make sure all dependencies are installed before opening the main notebook file (
 Make sure the python version 3.12.4 or higher before running.
 ```code
 [optional] python -m venv <name>
+[optional] # Activate your venv
 
 pip install -r requirements.txt
 ```
