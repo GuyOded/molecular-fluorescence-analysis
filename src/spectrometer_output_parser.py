@@ -39,4 +39,4 @@ def parse_excels_in_folder(folder_path: Path, default_sample_time=1000) -> list[
     if not folder_path.is_dir():
         raise ValueError(f"Path \"{folder_path}\" does not lead to a directory")
 
-    return [parse_excel_output(out) for out in folder_path.iterdir() if Path(out).suffix == ".ods"]
+    return [parse_excel_output(out, default_sample_time) for out in folder_path.iterdir() if Path(out).suffix == ".ods"]
