@@ -1,5 +1,8 @@
+import scipy.constants
 from spectrometer_output_parser import SpectrometerOutput
 import numpy as np
+import scipy
+from curve_fitter import ModelData
 from scipy import integrate
 from dataclasses import dataclass
 
@@ -83,3 +86,24 @@ def integrate_spectrometer_outputs(outputs: list[SpectrometerOutput]) -> tuple[n
     uncertainties = result[:, 1]
 
     return (integration_results, uncertainties)
+
+
+def create_polariton_fitting_model_data(wavelengths: np.ndarray, wavelength_error: np.ndarray, angles: np.ndarray, angle_error: np.ndarray):
+    """
+    Creates model data suited for exciton-polariton energy to photon energy fitting.
+    The given angle parameter is assumed to be in degrees.
+    Wavelengths are assumed to be in nm
+    """
+
+    wavelength_meters = wavelengths*10**-9
+    wavelength_error_meters = wavelength_error*10**-9
+
+    # The independent variable is taken to be \frac{2 \pi}{\lambda_{LP, HP} \sin^2 (\theta)
+    x = (2*np.pi / wavelength_meters) * np.sin(np.deg2rad(angles)**2)
+    x_error = np.sqrt(((x / wavelength_meters)*wavelength_error_meters)**2 +
+                      (2*x / np.sin(np.deg2rad(angles))*np.cos(np.deg2rad(angles)*np.deg2rad(angle_error)))**2)
+
+    y = scipy.constants.h * scipy.constants.c / (wavelength_meters*10**-9)
+    y_error = y / (wavelength_meters*10**-9) * (wavelength_error_meters*10**-9)
+
+    return ModelData(x, x_error, y, y_error)
