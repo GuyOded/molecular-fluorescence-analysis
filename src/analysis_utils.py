@@ -41,7 +41,8 @@ def generate_spectrometer_dataset(output: SpectrometerOutput, normalize_time=Tru
     return SpectrometerDataset(wavelength, intensity, wavelength_uncertainty, intensity_uncertainty)
 
 
-def average_spectrometer_dataset_integration(dataset: SpectrometerDataset, wavelength_threshold=WAVELENGTH_THRESHOLD) -> tuple[float, float]:
+def average_spectrometer_dataset_integration(
+        dataset: SpectrometerDataset, wavelength_threshold=WAVELENGTH_THRESHOLD) -> tuple[float, float]:
     """
     Calculates integral of intensity w.r.t wavelength using trapezoid rule, averaging over the uncertainty range.
     """
@@ -56,7 +57,8 @@ def average_spectrometer_dataset_integration(dataset: SpectrometerDataset, wavel
     return ((upper_integral + lower_integral) / 2, (upper_integral - lower_integral) / 2)
 
 
-def integrate_spectrometer_dataset(dataset: SpectrometerDataset, wavelength_threshold=WAVELENGTH_THRESHOLD) -> tuple[float, float]:
+def integrate_spectrometer_dataset(dataset: SpectrometerDataset,
+                                   wavelength_threshold=WAVELENGTH_THRESHOLD) -> tuple[float, float]:
     filtered_dataset = filter_intensity_and_wavelength_by_wavelength_threshold(dataset, wavelength_threshold)
 
     integration_result = integrate.trapezoid(
@@ -65,7 +67,8 @@ def integrate_spectrometer_dataset(dataset: SpectrometerDataset, wavelength_thre
     return integration_result, 1 / np.sqrt(np.abs(integration_result))
 
 
-def filter_intensity_and_wavelength_by_wavelength_threshold(dataset: SpectrometerDataset, wavelength_threshold=WAVELENGTH_THRESHOLD) -> SpectrometerDataset:
+def filter_intensity_and_wavelength_by_wavelength_threshold(
+        dataset: SpectrometerDataset, wavelength_threshold=WAVELENGTH_THRESHOLD) -> SpectrometerDataset:
     indices_above_threshold = np.where(dataset.wavelength >= wavelength_threshold)
     if len(indices_above_threshold) == 0:
         raise ValueError(f"Threshold {wavelength_threshold} is greater than all other wavelength.")
@@ -88,22 +91,23 @@ def integrate_spectrometer_outputs(outputs: list[SpectrometerOutput]) -> tuple[n
     return (integration_results, uncertainties)
 
 
-def create_polariton_fitting_model_data(wavelengths: np.ndarray, wavelength_error: np.ndarray, angles: np.ndarray, angle_error: np.ndarray):
+def create_polariton_fitting_model_data(
+        wavelengths: np.ndarray, wavelength_error: np.ndarray, angles: np.ndarray, angle_error: np.ndarray):
     """
     Creates model data suited for exciton-polariton energy to photon energy fitting.
     The given angle parameter is assumed to be in degrees.
     Wavelengths are assumed to be in nm
     """
 
-    wavelength_meters = wavelengths*10**-9
-    wavelength_error_meters = wavelength_error*10**-9
+    wavelength_meters = wavelengths * 10**-9
+    wavelength_error_meters = wavelength_error * 10**-9
 
     # The independent variable is taken to be \frac{2 \pi}{\lambda_{LP, HP} \sin^2 (\theta)
-    x = (2*np.pi / wavelength_meters) * np.sin(np.deg2rad(angles)**2)
-    x_error = np.sqrt(((x / wavelength_meters)*wavelength_error_meters)**2 +
-                      (2*x / np.sin(np.deg2rad(angles))*np.cos(np.deg2rad(angles)*np.deg2rad(angle_error)))**2)
+    x = (2 * np.pi / wavelength_meters) * np.sin(np.deg2rad(angles))
+    x_error = np.sqrt(((x / wavelength_meters) * wavelength_error_meters)**2 +
+                      ((4 * np.pi / wavelength_meters) * np.cos(np.deg2rad(angles)) * np.deg2rad(angle_error))**2)
 
-    y = scipy.constants.h * scipy.constants.c / (wavelength_meters*10**-9)
-    y_error = y / (wavelength_meters*10**-9) * (wavelength_error_meters*10**-9)
+    y = scipy.constants.h * scipy.constants.c / (wavelength_meters * 10**-9)
+    y_error = y / (wavelength_meters * 10**-9) * (wavelength_error_meters * 10**-9)
 
     return ModelData(x, x_error, y, y_error)
