@@ -1,3 +1,5 @@
+import scipy
+import scipy.constants
 import scipy.odr as odr
 import numpy as np
 import typing
@@ -28,6 +30,14 @@ class GaussianModelParameters:
     normalization: float
 
 
+@dataclass(frozen=True)
+class ExcitonPolaritonParameters:
+    diffraction_index: float
+    cavity_length: float
+    exciton_energy: float
+    omega: float
+
+
 def linear_model(beta: tuple[float, float], x: float):
     free_term = beta[0]
     slope = beta[1]
@@ -54,6 +64,15 @@ def gaussian_sum_model(beta: list[float], x: float):
     return np.array([gaussian_model([gaussian_params.mean, gaussian_params.std_dev, gaussian_params.normalization], x) for gaussian_params in gaussian_params_list]).sum(axis=0)
 
 
+def exciton_polariton_energy_model(beta: tuple[float, float, float, float], x: float, is_high):
+    diffraction_index, cavity_length, exciton_energy, omega = beta
+
+    photon_energy = scipy.constants.hbar*scipy.constants.c / \
+        diffraction_index * np.sqrt(x**2 + (np.pi / cavity_length)**2)
+
+    return 0.5*(exciton_energy + photon_energy + (-1)**(not is_high) * np.sqrt(4 * (scipy.constants.hbar**2) * omega**2 + (exciton_energy - photon_energy)**2))
+
+
 def vectorized_line(free_term: float, slope: float):
     return np.vectorize(lambda x: linear_model([free_term, slope], x))
 
@@ -66,6 +85,14 @@ def vectorized_gaussian_sum(gaussian_parameters: list[GaussianModelParameters]):
     flattened_params = list(itertools.chain.from_iterable(
         [[params.mean, params.std_dev, params.normalization] for params in gaussian_parameters]))
     return np.vectorize(lambda x: gaussian_sum_model(flattened_params, x))
+
+
+def vectorized_exciton_polariton_high(beta: tuple[float, float, float, float]):
+    return np.vectorize(lambda x: exciton_polariton_energy_model(beta, x, True))
+
+
+def vectorized_exciton_polariton_low(beta: tuple[float, float, float, float]):
+    return np.vectorize(lambda x: exciton_polariton_energy_model(beta, x, False))
 
 
 def fit_exponent(model_data: ModelData, guess: ExponentModelParameters) -> tuple[ExponentModelParameters, ExponentModelParameters, float, float]:
@@ -92,6 +119,15 @@ def fit_gaussian_sum(model_data: ModelData, guess: list[GaussianModelParameters]
     std_dev_list = [(std_dev[i], std_dev[i+1], std_dev[i+2]) for i in range(0, len(std_dev), 3)]
 
     return fit_params_list, std_dev_list, chi_sq, p_value
+
+
+def fit_exciton_polariton_energy(model_data: ModelData, guess: ExcitonPolaritonParameters, is_high: bool):
+    def model_function(beta, x): return exciton_polariton_energy_model(beta, x, is_high)
+
+    beta, std_dev, chi_sq, p_value = odr_fit(model_data, model_function, guess)
+    fitted_params = ExcitonPolaritonParameters(beta[0], beta[1], beta[2], beta[3])
+
+    return fitted_params, std_dev, chi_sq, p_value
 
 
 def odr_fit(model_data: ModelData, model_func: typing.Callable[[list[float], float], float], guess: list[float]) -> tuple[list[float], list[float], float, float]:
