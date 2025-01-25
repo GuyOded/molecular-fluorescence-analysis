@@ -102,12 +102,12 @@ def create_polariton_fitting_model_data(
     wavelength_meters = wavelengths * 10**-9
     wavelength_error_meters = wavelength_error * 10**-9
 
-    # The independent variable is taken to be \frac{2 \pi}{\lambda_{LP, HP} \sin^2 (\theta)
+    # The independent variable is taken to be \frac{2 \pi}{\lambda_{LP, HP} \sin (\theta)
     x = (2 * np.pi / wavelength_meters) * np.sin(np.deg2rad(angles))
     x_error = np.sqrt(((x / wavelength_meters) * wavelength_error_meters)**2 +
                       ((4 * np.pi / wavelength_meters) * np.cos(np.deg2rad(angles)) * np.deg2rad(angle_error))**2)
 
-    y = scipy.constants.h * scipy.constants.c / (wavelength_meters * 10**-9)
-    y_error = y / (wavelength_meters * 10**-9) * (wavelength_error_meters * 10**-9)
+    y = scipy.constants.h * scipy.constants.c / (wavelength_meters)
+    y_error = y / (wavelength_meters) * (wavelength_error_meters)
 
     return ModelData(x, x_error, y, y_error)
