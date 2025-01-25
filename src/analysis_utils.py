@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 # The uncertainty of the measured wavelength in nm
 # Taken from https://www.thorlabs.com/drawings/5a9469faa287d95e-B93A8B31-D6C7-39F4-ADD5791A79AA03C7/CCS200-Manual.pdf
-WAVELENGTH_UNCERTAINTY = 2
+WAVELENGTH_UNCERTAINTY = 0.5
 WAVELENGTH_THRESHOLD = 460
 # We assume that background noise is measured in all wave lengths up to this value
 BACKGROUND_NOISE_WAVELENGTH_LIMIT = 400
