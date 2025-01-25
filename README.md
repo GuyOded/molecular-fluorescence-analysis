@@ -19,7 +19,7 @@ On the first code block you can find a lot of paths. Make sure to change them to
 of the experiment. The results are expected to be in some tabular file format like excel, ods or csv and have the following form:
 
 | Wavelength \[nm\] | Intensity | Integration Time |
-----------------------------------------------------
+|-------------------|-----------|------------------|
 | <values>          | <values>  | <value>          |
 
 ### Part 2
@@ -29,7 +29,7 @@ Here the sheets have to be in excel format and contain all the measurements for 
 Each sheet has the following format:
 
 | x \[nm\] | Av       | Avl     |
----------------------------------
+|----------|----------|---------|
 | <values> | <values> | <value> |
 
 Where x, Av, Avl are all outputs of the matlab script partb.m
